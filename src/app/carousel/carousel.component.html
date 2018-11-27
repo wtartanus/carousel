@@ -1,9 +1,14 @@
 <section class="carousel-wrapper" [ngStyle]="carouselWrapperStyle">
-    <button (click)="prev()" class="navigation-arrows navigation-arrow-left">&#8592;</button>
-  <button (click)="next()" class="navigation-arrows navigation-arrow-right">&#8594;</button>
+  <button *ngIf="showArrowsNavigation" (click)="prev()" class="navigation-arrows navigation-arrow-left">&#8592;</button>
+  <button *ngIf="showArrowsNavigation" (click)="next()" class="navigation-arrows navigation-arrow-right">&#8594;</button>
   <ul class="carousel-inner" #carousel>
     <li *ngFor="let item of items;" class="appCarouselItemElement">
       <ng-container [ngTemplateOutlet]="item.tpl"></ng-container>
+    </li>
+  </ul>
+  <ul class="navigation-step-container">
+    <li *ngFor="let item of items; index as index">
+        <button (click)="setCurrentStep(index)" class="navigation-step" [ngClass]="{'current-step': index === currentSlide}"></button>
     </li>
   </ul>
 </section>

@@ -31,6 +31,8 @@ export class CarouselComponent implements AfterViewInit {
   @ViewChild('carousel') private carousel: ElementRef;
   @Input() timing = '250ms ease-in';
   @Input() showControls = true;
+  @Input() showArrowsNavigation = true;
+  @Input() showStepsNavigation = true;
   private player: AnimationPlayer;
   private itemWidth: number;
   private currentSlide = 0;
@@ -59,6 +61,19 @@ export class CarouselComponent implements AfterViewInit {
     }
 
     this.currentSlide = ((this.currentSlide - 1) + this.items.length) % this.items.length;
+    const offset = this.currentSlide * this.itemWidth;
+
+    const myAnimation: AnimationFactory = this.buildAnimation(offset);
+    this.player = myAnimation.create(this.carousel.nativeElement);
+    this.player.play();
+  }
+
+  setCurrentStep(index: number) {
+    if (this.currentSlide === index) {
+      return;
+    }
+
+    this.currentSlide = index;
     const offset = this.currentSlide * this.itemWidth;
 
     const myAnimation: AnimationFactory = this.buildAnimation(offset);
