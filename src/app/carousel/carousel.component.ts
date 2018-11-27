@@ -20,6 +20,8 @@ import { animate, AnimationBuilder, AnimationFactory, AnimationPlayer, style } f
 export class CarouselItemElementDirective {
 }
 
+const EASEIN = '250ms ease-in';
+
 @Component({
   selector: 'app-carousel',
   templateUrl: './carousel.component.html',
@@ -29,7 +31,7 @@ export class CarouselComponent implements AfterViewInit {
   @ContentChildren(CarouselItemDirective) items: QueryList<CarouselItemDirective>;
   @ViewChildren(CarouselItemElementDirective, { read: ElementRef }) private itemsElements: QueryList<ElementRef>;
   @ViewChild('carousel') private carousel: ElementRef;
-  @Input() timing = '250ms ease-in';
+  @Input() timing = EASEIN;
   @Input() showControls = true;
   @Input() showArrowsNavigation = true;
   @Input() showStepsNavigation = true;
@@ -38,63 +40,70 @@ export class CarouselComponent implements AfterViewInit {
   private currentSlide = 0;
   carouselWrapperStyle = {};
 
+  constructor( private builder: AnimationBuilder ) {}
+
+  ngAfterViewInit() {
+    setTimeout(() => this.setWidth());
+  }
+
+  setWidth() {
+    this.itemWidth = this.itemsElements.first.nativeElement.getBoundingClientRect().width;
+    this.carouselWrapperStyle = {
+      width: `${this.itemWidth}px`
+    };
+  }
+
   next() {
-    if ( this.currentSlide + 1 === this.items.length ) {
-      return;
-    }
-    this.currentSlide = (this.currentSlide + 1) % this.items.length;
+    this.setCurrentStep(this.calculateNextStep());
+    this.animateStepChange();
+  }
+
+  private calculateNextStep(): number {
+    return (this.currentSlide + 1) % this.items.length;
+  }
+
+  prev() {
+    this.setCurrentStep(this.calculatePreviousStep());
+    this.animateStepChange();
+  }
+
+  private calculatePreviousStep(): number {
+    return ((this.currentSlide - 1) + this.items.length) % this.items.length;
+  }
+
+  changeStep(index: number) {
+    this.setCurrentStep(index);
+    this.animateStepChange();
+  }
+
+  private setCurrentStep(index: number) {
+    this.currentSlide = index;
+  }
+
+  private animateStepChange() {
     const offset = this.currentSlide * this.itemWidth;
+
     const myAnimation: AnimationFactory = this.buildAnimation(offset);
     this.player = myAnimation.create(this.carousel.nativeElement);
     this.player.play();
   }
 
-  private buildAnimation( offset ) {
+  private buildAnimation(offset: number): AnimationFactory {
     return this.builder.build([
       animate(this.timing, style({ transform: `translateX(-${offset}px)` }))
     ]);
   }
 
-  prev() {
-    if ( this.currentSlide === 0 ) {
-      return;
-    }
-
-    this.currentSlide = ((this.currentSlide - 1) + this.items.length) % this.items.length;
-    const offset = this.currentSlide * this.itemWidth;
-
-    const myAnimation: AnimationFactory = this.buildAnimation(offset);
-    this.player = myAnimation.create(this.carousel.nativeElement);
-    this.player.play();
+  isCurrentSlide(index: number): boolean {
+    return index === this.currentSlide;
   }
 
-  setCurrentStep(index: number) {
-    if (this.currentSlide === index) {
-      return;
-    }
-
-    this.currentSlide = index;
-    const offset = this.currentSlide * this.itemWidth;
-
-    const myAnimation: AnimationFactory = this.buildAnimation(offset);
-    this.player = myAnimation.create(this.carousel.nativeElement);
-    this.player.play();
+  isFirstSlideActive(): boolean {
+    return this.currentSlide === 0;
   }
 
-  constructor( private builder: AnimationBuilder ) {
+  isLastSlideActive(): boolean {
+    return this.currentSlide === this.items.length - 1;
   }
-
-  ngAfterViewInit() {
-    console.log(this.itemsElements);
-    // For some reason only here I need to add setTimeout, in my local env it's working without this.
-    setTimeout(() => {
-      this.itemWidth = this.itemsElements.first.nativeElement.getBoundingClientRect().width;
-      this.carouselWrapperStyle = {
-        width: `${this.itemWidth}px`
-      };
-    });
-
-  }
-
 }
 

@@ -1,6 +1,6 @@
 <section class="carousel-wrapper" [ngStyle]="carouselWrapperStyle">
-  <button *ngIf="showArrowsNavigation" (click)="prev()" class="navigation-arrows navigation-arrow-left">&#8592;</button>
-  <button *ngIf="showArrowsNavigation" (click)="next()" class="navigation-arrows navigation-arrow-right">&#8594;</button>
+  <button *ngIf="showArrowsNavigation && !isFirstSlideActive()" (click)="prev()" class="navigation-arrows navigation-arrow-left">&#8592;</button>
+  <button *ngIf="showArrowsNavigation && !isLastSlideActive()" (click)="next()" class="navigation-arrows navigation-arrow-right">&#8594;</button>
   <ul class="carousel-inner" #carousel>
     <li *ngFor="let item of items;" class="appCarouselItemElement">
       <ng-container [ngTemplateOutlet]="item.tpl"></ng-container>
@@ -8,7 +8,13 @@
   </ul>
   <ul class="navigation-step-container">
     <li *ngFor="let item of items; index as index">
-        <button (click)="setCurrentStep(index)" class="navigation-step" [ngClass]="{'current-step': index === currentSlide}"></button>
+      <button
+        (click)="changeStep(index)"
+        class="navigation-step"
+        [ngClass]="{'current-step': isCurrentSlide(index)}"
+        [disabled]="isCurrentSlide(index)"
+      >
+      </button>
     </li>
   </ul>
 </section>
