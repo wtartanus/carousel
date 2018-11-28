@@ -2,7 +2,7 @@
   <button *ngIf="showArrowsNavigation && !isFirstSlideActive()" (click)="prev()" class="navigation-arrows navigation-arrow-left">&#8592;</button>
   <button *ngIf="showArrowsNavigation && !isLastSlideActive()" (click)="next()" class="navigation-arrows navigation-arrow-right">&#8594;</button>
   <ul class="carousel-inner" #carousel>
-    <li *ngFor="let item of items;" class="appCarouselItemElement">
+    <li *ngFor="let item of items;" class="appCarouselItemElement" (touchstart)="startTouchEvent($event)" (touchmove)="onTouchMove($event)">
       <ng-container [ngTemplateOutlet]="item.tpl"></ng-container>
     </li>
   </ul>
