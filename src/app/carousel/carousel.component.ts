@@ -5,9 +5,7 @@ import {
   Directive,
   ElementRef,
   Input,
-  OnInit,
   QueryList,
-  TemplateRef,
   ViewChild,
   ViewChildren
 } from '@angular/core';
@@ -46,24 +44,38 @@ export class CarouselComponent implements AfterViewInit {
   @Input() showControls = true;
   @Input() showArrowsNavigation = true;
   @Input() showStepsNavigation = true;
+  @Input() slidesInterval = 0;
   private player: AnimationPlayer;
   private itemWidth: number;
   private currentSlide = 0;
   private initialX: number;
   private initialY: number;
+  private interval: any;
   carouselWrapperStyle = {};
 
   constructor( private builder: AnimationBuilder ) {}
 
   ngAfterViewInit() {
     setTimeout(() => this.setWidth());
+    if (this.shouldAutoSlideChange()) {
+      this.playSlides();
+    }
   }
 
-  setWidth() {
+  private setWidth() {
     this.itemWidth = this.itemsElements.first.nativeElement.getBoundingClientRect().width;
     this.carouselWrapperStyle = {
       width: `${this.itemWidth}px`
     };
+  }
+
+  private shouldAutoSlideChange(): any {
+    return this.slidesInterval > 0;
+  }
+
+  autoSlides() {
+    const nextSlideIndex = this.isLastSlideActive() ? 0 : this.currentSlide + 1;
+    this.changeStep(nextSlideIndex);
   }
 
   startTouchEvent(event) {
@@ -126,13 +138,16 @@ export class CarouselComponent implements AfterViewInit {
         this.prev();
         break;
       default:
-        // Fell trhought
+        // Fell throught
     }
   }
 
   next() {
     this.setCurrentStep(this.calculateNextStep());
     this.animateStepChange();
+    if (this.interval) {
+      this.resetInterval();
+    }
   }
 
   private calculateNextStep(): number {
@@ -142,6 +157,9 @@ export class CarouselComponent implements AfterViewInit {
   prev() {
     this.setCurrentStep(this.calculatePreviousStep());
     this.animateStepChange();
+    if (this.interval) {
+      this.resetInterval();
+    }
   }
 
   private calculatePreviousStep(): number {
@@ -151,6 +169,9 @@ export class CarouselComponent implements AfterViewInit {
   changeStep(index: number) {
     this.setCurrentStep(index);
     this.animateStepChange();
+    if (this.interval) {
+      this.resetInterval();
+    }
   }
 
   private setCurrentStep(index: number) {
@@ -181,6 +202,17 @@ export class CarouselComponent implements AfterViewInit {
 
   isLastSlideActive(): boolean {
     return this.currentSlide === this.items.length - 1;
+  }
+
+  private resetInterval() {
+    clearInterval(this.interval);
+    this.playSlides();
+  }
+
+  private playSlides() {
+    setInterval(() => {
+      this.interval = this.autoSlides();
+    }, this.slidesInterval);
   }
 }
 
